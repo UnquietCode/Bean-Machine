@@ -38,7 +38,6 @@ public class BeanMachine implements ApplicationListener {
 	 *
 	 * The returned list is unmodifiable! If you find that you are needing to
 	 * manipulate the list then perhaps reconsider your implementation.
-	 * 
 	 *
 	 * @param type the class of beans to retrieve and sort
 	 * @return an ordered list of beans
@@ -46,6 +45,10 @@ public class BeanMachine implements ApplicationListener {
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> List<T> getOrderedList(Class<T> type) throws CyclicDependenciesException {
+		if (type == null) {
+			throw new IllegalArgumentException("type must be provided");
+		}
+
 		if (resultCache.containsKey(type)) {
 			return resultCache.get(type);
 		}
@@ -115,20 +118,26 @@ public class BeanMachine implements ApplicationListener {
 
 		// perform a topological sort
 		List<Node> ordered = new ArrayList<Node>();
+
 		while (!candidates.isEmpty()) {
-			Node n = candidates.iterator().next();
-			candidates.remove(n);
-			ordered.add(n);
+			List<Node> currentLevel = new ArrayList<Node>(candidates);
+			candidates.clear();
 
-			for (Node c : n.children) {
-				c.parents.remove(n);
+			for (Node n : currentLevel) {
+				for (Node c : n.children) {
+					c.parents.remove(n);
 
-				if (c.parents.isEmpty()) {
-					candidates.add(c);
+					if (c.parents.isEmpty()) {
+						candidates.add(c);
+					}
 				}
+
+				n.children.clear(); // 1:1 removal parents to children (avoids concurrent modification above)
 			}
 
-			n.children.clear(); // 1:1 removal parents to children (avoids concurrent modification above)
+			// sort the level (first/last) and then add
+			Collections.sort(currentLevel, FIRST_LAST_COMPARATOR);
+			ordered.addAll(currentLevel);
 		}
 		
 		// sort the list of provided beans
@@ -163,6 +172,7 @@ public class BeanMachine implements ApplicationListener {
 		Clone the node against a local universe of copies.
 		Child and Parent nodes not matching the filter class are discarded.
 	 */
+	@SuppressWarnings("unchecked")
 	private Node cloneAndFilter(Node node, Map<Node, Node> cloneMap, Class filter) {
 		if (cloneMap.containsKey(node)) {
 			return cloneMap.get(node);
@@ -264,8 +274,8 @@ public class BeanMachine implements ApplicationListener {
 
 
 	/*
-		Struct for holding the processed parent/child relations for
-		each class.
+		Struct for holding the processed parent/child relations
+		for each class.
 	 */
 	private static class Node {
 		Class klaus;
@@ -278,4 +288,27 @@ public class BeanMachine implements ApplicationListener {
 			this.klaus = klaus;
 		}
 	}
+
+	private static final Comparator<Node> FIRST_LAST_COMPARATOR = new Comparator<Node>() {
+		public int compare(Node n1, Node n2) {
+			if (n1.isFirst)
+				if (n2.isFirst)
+					return 0;
+				else
+					return -1;
+
+			else if (n2.isFirst)
+				return 1;
+
+			if (n1.isLast)
+				if (n2.isLast)
+					return 0;
+				else
+					return 1;
+			else if (n2.isLast)
+				return -1;
+
+			return 0;
+		}
+	};
 }

@@ -15,7 +15,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Precedes {
-	Class[] value() default EMPTY.class;
-
-	static final class EMPTY { }
+	Class[] value();
 }
