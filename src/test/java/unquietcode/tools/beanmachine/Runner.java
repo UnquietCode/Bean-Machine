@@ -10,7 +10,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * @version 10-12-2011
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"classpath:applicationContext-test.xml"})
+@ContextConfiguration("classpath:applicationContext-test.xml")
 public class Runner {
 
 	@Autowired
