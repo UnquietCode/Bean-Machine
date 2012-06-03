@@ -1,13 +1,5 @@
 package unquietcode.tools.beanmachine;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.stereotype.Component;
-
 import java.util.*;
 
 
@@ -17,14 +9,27 @@ import java.util.*;
  *
  * @see Precedes
  * @see Succeeds
+ * @see First
+ * @see Last
  */
-@Component
-public class BeanMachine implements ApplicationListener {
-
-	@Autowired
-	ApplicationContext context;
+public class BeanMachine {
 
 	private Map<Class, List> resultCache = new HashMap<Class, List>();
+	private final BeanManager beanManager;
+
+
+	public BeanMachine(BeanManager beanManager) {
+		if (beanManager == null) {
+			throw new IllegalArgumentException("A valid BeanManager is required.");
+		}
+
+		this.beanManager = beanManager;
+		beanManager.setBeanMachine(this);
+	}
+
+	public void clearCache() {
+		resultCache.clear();
+	}
 
 	/**
 	 * Given a type of bean, returns an ordered list of beans.
@@ -53,24 +58,12 @@ public class BeanMachine implements ApplicationListener {
 			return resultCache.get(type);
 		}
 
-		Collection<T> list = context.getBeansOfType(type).values();
+		Collection<T> list = beanManager.getBeansOfType(type);
 		List<T> result = sort(list, type);
 		result = Collections.unmodifiableList(result);
 		resultCache.put(type, result);
 		
 		return result;
-	}
-
-	/**
-	 * Respond to application context events, specifically a refresh event
-	 * which could invalidate our list of sorted beans.
-	 * 
-	 * @param event the event
-	 */
-	public void onApplicationEvent(ApplicationEvent event) {
-		if (event instanceof ContextRefreshedEvent) {
-			resultCache.clear();
-		}
 	}
 
 	/*

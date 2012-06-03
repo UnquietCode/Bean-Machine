@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import javax.annotation.PostConstruct;
+
 /**
  * @author Ben Fagin
  * @version 10-12-2011
@@ -14,5 +16,12 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class Runner {
 
 	@Autowired
-    protected BeanMachine machine;
+    private BeanManager springBeanManager;
+
+	protected BeanMachine machine;
+
+	@PostConstruct
+	void init() {
+		machine = new BeanMachine(springBeanManager);
+	}
 }
