@@ -6,6 +6,7 @@ is available by using the `@First` and `@Last` annotations, which provide orderi
 
 ## New in 1.1
 * `BeanManager` abstraction, with out-of-the-box Spring and Pojo managers
+* Dependency free, with Spring being completely optional now!
 
 ## How to use it.
 ### Spring
@@ -24,6 +25,9 @@ is available by using the `@First` and `@Last` annotations, which provide orderi
 When a list is requested, it is retreived either from the cache or recomputed. The cache is cleared automatically
 when the context is refreshed. When the list of beans is first computed the graph is checked for cycles, and if one
 is detected an exception is thrown.
+
+See the [tests](https://github.com/UnquietCode/Bean-Machine/tree/master/src/test/java/unquietcode/tools/beanmachine)
+for full usage examples.
 
 ## ...why?
 The tool was initially written for several projects where pluggable processing steps were being used. Developers
