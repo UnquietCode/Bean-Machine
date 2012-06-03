@@ -198,6 +198,10 @@ public class BeanMachine implements ApplicationListener {
 			}
 		}
 
+		// copy properties
+		n.isFirst = node.isFirst;
+		n.isLast = node.isLast;
+
 		return n;
 	}
 
@@ -296,7 +300,6 @@ public class BeanMachine implements ApplicationListener {
 					return 0;
 				else
 					return -1;
-
 			else if (n2.isFirst)
 				return 1;
 
